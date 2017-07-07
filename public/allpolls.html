@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Poll-erizer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Port+Lligat+Sans" rel="stylesheet">
+    <link href="/public/css/polls.css" rel="stylesheet" type="text/css">
+    <script src="https://unpkg.com/react@latest/dist/react.js"></script>
+    <script src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.0.5/d3.min.js"></script>
+    <script type="text/javascript" src="/public/javascripts/chart.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/javascript" src="/common/ajax-functions.js"></script>
+    <script type="text/babel">
+      var arr = window.location.pathname.split('/')
+      var urlusername = arr[2]
+      var urlpollname = arr[3]
+      var style = function(name, loggedInUser, poll) {
+        var display
+        if (window.location.pathname != '/mypolls' && window.location.pathname != '/allpolls') {
+          if (poll) {
+            urlusername == name && urlpollname == encodeURIComponent(poll.name) ? display = '' : display = 'none'
+            this.display = display
+          } else {
+            name == loggedInUser? display = '' : display = 'none'
+            this.display = display
+          }
+        } else {
+          if (poll) {
+            this.display = ''
+          } else {
+            name == loggedInUser? display = '' : display = 'none'
+            this.display = display
+          }
+        }
+      }
+      var style2 = function(name, loggedInUser) {
+        var display
+        if (window.location.pathname != '/mypolls' && window.location.pathname != '/allpolls') {
+          this.display = 'none'
+        } else {
+          name == loggedInUser? display = '' : display = 'none'
+          this.display = display
+        }
+      }
+      var collapseStyle = function() {
+        if (window.location.pathname != '/mypolls' && window.location.pathname != '/allpolls') {
+          return 'panel-collapse'
+        } else {
+          return 'panel-collapse collapse'
+        }
+      }
+      var apiUrl
+      if (window.location.pathname == '/mypolls') {
+        apiUrl = appUrl + '/api/:id/polls'
+      } else {
+        apiUrl = appUrl + '/api/:id/allpolls'
+      }
+      class Form extends React.Component {
+        constructor(props) {
+          super(props)
+          this.state = {}
+          this.vote = this.vote.bind(this)
+          this.remove = this.remove.bind(this)
+          this.insert = this.insert.bind(this)
+          this.update = this.update.bind(this)
+          this.editName = this.editName.bind(this)
+          this.editNameKeyDown = this.editNameKeyDown.bind(this)
+        }
+        componentWillMount() {
+          this.update()
+        }
+        update() {
+          ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, (data) => {
+            var parsedData = JSON.parse(data)
+            if (Array.isArray(parsedData)) {
+              this.setState({
+                all: parsedData
+              })
+            }
+            else {
+              this.setState({
+                all: [parsedData]
+              })
+            }
+          }))
+          ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', appUrl + '/api/:id', (data) => {
+            if (data.split('', 1)[0] == '{') {//confirms data is an object and thus logged in, else login page html is returned
+              var userObject = JSON.parse(data)
+              var username = userObject.username
+              this.setState({
+                username: username
+              })
+            }
+          }))
+        }
+        vote(e) {
+          var parsedId = e.target.id.split('_')
+          var i = parsedId[1]
+          var j = parsedId[2]
+          var k = parsedId[3]
+          var all = this.state.all
+          var setData = (data) => {
+            if (Array.isArray(data)) {
+              this.setState({
+                all: data
+              })
+            } else {
+              all[i] = data
+              this.setState({
+                all: all
+              })
+            }
+          }
+          
+          ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, (data) => {
+            var parsedData = JSON.parse(data)
+            var state
+            if (Array.isArray(parsedData)) {
+              parsedData[i].polls[j].options[k].votes ++
+              state = JSON.stringify(parsedData[i])
+            }
+            else {
+              parsedData.polls[j].options[k].votes ++
+              state = JSON.stringify(parsedData)
+            }
+            ajaxFunctions.ready(ajaxFunctions.ajaxVotePostRequest('POST', apiUrl, state, () => {
+              setData(parsedData)
+            }))
+          }))
+        }
+        remove(e) {
+          var parsedId = e.target.id.split('_')
+          var i = parsedId[1]
+          var j = parsedId[2]
+          var k
+          var all = this.state.all
+          if (parsedId.length == 3) {
+            all[i].polls.splice(j, 1)
+            this.setState({
+              all: all
+            })
+          } else {
+            k = parsedId[3]
+            all[i].polls[j].options.splice(k, 1)
+            this.setState({
+              all: all
+            })
+          }
+          
+          ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, (data) => {
+            var parsedData = JSON.parse(data)
+            var state
+            if (Array.isArray(parsedData)) {
+              parsedData[i].polls = all[i].polls
+              state = JSON.stringify(parsedData[i])
+            }
+            else {
+              parsedData.polls = all[i].polls
+              state = JSON.stringify(parsedData)
+            }
+            ajaxFunctions.ready(ajaxFunctions.ajaxPostRequest('POST', apiUrl, state))
+          }))
+        }
+        insert(e) {
+          var parsedId = e.target.id.split('_')
+          var i = parsedId[1]
+          var j
+          var all = this.state.all
+          if (parsedId.length == 2) {
+            var newPoll = {
+              name: 'New poll',
+              options: [
+                {'item': 'New option',
+                'votes': 0
+                },
+                {'item': 'New option',
+                'votes': 0
+                }
+              ]
+            }
+            all[i].polls.push(newPoll)
+            this.setState({
+              all: all
+            })
+          } else {
+            j = parsedId[2]
+            var newOption = {
+            'item': 'New option',
+            'votes': 0
+            }
+            all[i].polls[j].options.push(newOption)
+            this.setState({
+              all: all
+            })
+          }
+          
+          ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, (data) => {
+            var parsedData = JSON.parse(data)
+            var state
+            if (Array.isArray(parsedData)) {
+              parsedData[i].polls = all[i].polls
+              state = JSON.stringify(parsedData[i])
+            }
+            else {
+              parsedData.polls = all[i].polls
+              state = JSON.stringify(parsedData)
+            }
+            ajaxFunctions.ready(ajaxFunctions.ajaxPostRequest('POST', apiUrl, state))
+          }))
+        }
+        editName(e) {
+          var parsedId = e.target.id.split('_')
+          var i = parsedId[1]
+          var j = parsedId[2]
+          var k
+          var idEditName
+          var ideditButton
+          if (parsedId.length == 3) {
+            idEditName = $('#editName' + '_' + i + '_' + j)
+            ideditButton = $('#editButton' + '_' + i + '_' + j)
+          } else {
+            k = parsedId[3]
+            idEditName = $('#editName' + '_' + i + '_' + j + '_' + k)
+            ideditButton = $('#editButton' + '_' + i + '_' + j + '_' + k)
+          }
+          
+          if (idEditName[0].contentEditable=='true') {
+            idEditName[0].contentEditable='false'
+            window.getSelection().removeAllRanges()
+            // idEditName.css('background', '')
+            var x = idEditName[0].innerText.replace(/\n/g, "")
+            var all = this.state.all
+            if (parsedId.length == 3) {
+              ideditButton[0].innerText = 'Edit poll name'
+              all[i].polls[j].name = x
+              this.setState({
+                all: all
+              })
+            } else {
+            ideditButton[0].innerText = 'Edit option'
+              all[i].polls[j].options[k].item = x
+              this.setState({
+                all: all
+              })
+            }
+            
+            ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, (data) => {
+              var parsedData = JSON.parse(data)
+              var state
+              if (Array.isArray(parsedData)) {
+                if (parsedId.length == 3) {
+                  parsedData[i].polls[j].name = x
+                } else {
+                  parsedData[i].polls[j].options[k].item = x
+                }
+                state = JSON.stringify(parsedData[i])
+              }
+              else {
+                if (parsedId.length == 3) {
+                  parsedData.polls[j].name = x
+                } else {
+                  parsedData.polls[j].options[k].item = x
+                }
+                state = JSON.stringify(parsedData)
+              }
+              ajaxFunctions.ready(ajaxFunctions.ajaxPostRequest('POST', apiUrl, state))
+            }))
+          }
+          else {
+            idEditName[0].contentEditable='true'
+            // idEditName.css('background', 'rgb(225, 160, 140)')
+            ideditButton[0].innerText = 'Save'
+            idEditName.focus()
+            var nameLength = idEditName[0].innerText.length
+            var range = document.createRange()
+            range.setStart(idEditName[0].firstChild, 0)
+            range.setEnd(idEditName[0].firstChild, nameLength)
+            var selection = window.getSelection()
+            selection.removeAllRanges()
+            selection.addRange(range)
+          }
+        }
+        editNameKeyDown(e) {
+          if (e.key == 'Enter') {
+            this.editName(e)
+          }
+          if (e.target.textContent.length > 50 && e.which != 8 && e.which != 46) {
+            e.preventDefault()//prevents further typing of characters
+          }
+        }
+        render() {
+          if (this.state.all) {
+            var mypollsButtonStyle = () => {
+              if (window.location.pathname == '/mypolls' || !this.state.username) return {display: 'none'}
+            }
+            var allpollsButtonStyle = () => {
+              if (window.location.pathname == '/allpolls') return {display: 'none'}
+            }
+            var loginButtonStyle = () => {
+              if (this.state.username) return {display: 'none'}
+            }
+            var logoutButtonStyle = () => {
+              if (!this.state.username) return {display: 'none'}
+            }
+            return (
+              <div>
+                <h2>Poll-erizer</h2>
+                <div className='text-center marginBottom'>
+                  <a href="/mypolls" style={mypollsButtonStyle()}>
+                    <button className="dynamic-btn">
+                      <img src="/public/img/head-icon.png" alt="my polls logo" />
+                      <p>My polls</p>
+                    </button>
+                  </a>
+                  <a href="/allpolls" style={allpollsButtonStyle()}>
+                    <button className="dynamic-btn">
+                      <img src="/public/img/eye.png" alt="all polls logo" />
+                      <p>View all polls</p>
+                    </button>
+                  </a>
+                  <a href="/auth/github">
+                    <button className="dynamic-btn" style={loginButtonStyle()}>
+                      <img src="/public/img/github-icon.png" alt="github logo" />
+                      <p>Login with Github</p>
+                    </button>
+                  </a>
+                  <a href="/logout" style={logoutButtonStyle()}>
+                    <button className="dynamic-btn">
+                      <img src="/public/img/logout-symbol.png" alt="logout logo" />
+                      <p>Logout</p>
+                    </button>
+                  </a>
+                </div>
+                <Users state={this.state} voteFunc={this.vote} removeFunc={this.remove} editNameFunc={this.editName} insertFunc={this.insert} editNameKeyDownFunc={this.editNameKeyDown} />
+              </div>
+            )
+          } else {
+            return <div className='text-center'>Loading...</div>
+          }
+        }
+      }
+      function Users(props) {
+        if (props.state.all[0] && props.state.all[0].polls) {
+          var users = props.state.all.map(function(user, i) {
+            var pollTitleStyle = function() {
+              if (window.location.pathname != '/mypolls' && window.location.pathname != '/allpolls') {
+                return {display: 'none'}
+              } else if (window.location.pathname == '/mypolls') {
+                return {display: ''}
+              } else {
+                if (user.polls[0]) {
+                  return {display: ''}
+                } else {
+                  return {display: 'none'}
+                }
+              }
+            }
+            var addButtonStyle = function() {
+              if (window.location.pathname != '/mypolls') return {display: 'none'}
+            }
+            return (
+              <div key={i}>
+                <h2 style={pollTitleStyle()}>{user.github.username + "'s polls"}</h2>
+                <Polls username={props.state.username} user={user} userNumber={i} voteFunc={props.voteFunc} removeFunc={props.removeFunc} editNameFunc={props.editNameFunc} insertFunc={props.insertFunc} editNameKeyDownFunc={props.editNameKeyDownFunc} />
+                <div className='add_btn' style={addButtonStyle()}>
+                  <button id={`addPoll${'_' + i}`} className='btn btn-primary' onClick={props.insertFunc}>Add my poll</button>
+                </div>
+              </div>
+            )
+          })
+          return (
+            <div>
+              {users}
+            </div>
+          )
+        } else {
+          return <div className='text-center'>Database empty</div>
+        }
+      }
+      function Polls(props) {
+        var polls = props.user.polls.map(function(poll, i) {
+          var pollURL = appUrl + '/poll/' + props.user.github.username + '/' + encodeURIComponent(poll.name)
+          return (
+            <div key={props.userNumber + '_' + i} className='panel' style={new style(props.user.github.username, props.username, poll)}>
+              <div className='panel-heading'>
+                <Poll username={props.username} user={props.user} userNumber={props.userNumber} poll={poll} pollNumber={i} removeFunc={props.removeFunc} editNameFunc={props.editNameFunc} editNameKeyDownFunc={props.editNameKeyDownFunc}/>
+              </div>
+              <div id={`collapse${'_' + props.userNumber + '_' + i}`} className={collapseStyle()}>
+                <div className='panel-body'>
+                  <div className='marginBottom' style={new style2(props.user.github.username, props.username)}><span>Unique poll URL: </span><a href={pollURL} target='_blank'>{pollURL}</a></div>
+                  <Options username={props.username} user={props.user} userNumber={props.userNumber} poll={poll} pollNumber={i} voteFunc={props.voteFunc} removeFunc={props.removeFunc} editNameFunc={props.editNameFunc} editNameKeyDownFunc={props.editNameKeyDownFunc} />
+                  <div className='add-option options' style={new style(props.user.github.username, props.username)}>
+                    <button id={`addOption${'_' + props.userNumber + '_' + i}`} className='btn btn-primary' onClick={props.insertFunc}>Add option</button>
+                  </div>
+                  <Chart userNumber={props.userNumber} poll={poll} pollNumber={i} />
+                </div>
+              </div>
+            </div>
+          )
+        })
+        return (
+          <div>
+            {polls}
+          </div>
+        )
+      }
+      
+      function Poll(props) {
+        return (
+          <h4 className='panel-title'>
+            <a href={`#collapse${'_' + props.userNumber + '_' + props.pollNumber}`} data-toggle='collapse' data-parent='#accordion'>
+              <i className='fa fa-sticky-note-o'></i></a>
+            <span className='poll-name' id={`editName${'_' + props.userNumber + '_' + props.pollNumber}`} onKeyDown={props.editNameKeyDownFunc}>{props.poll.name}</span>
+            <div className='right-align'>
+              <button id={`editButton${'_' + props.userNumber + '_' + props.pollNumber}`} className='btn btn-primary' style={new style2(props.user.github.username, props.username)} onClick={props.editNameFunc}>Edit poll name</button>
+              <button id={`deletePoll${'_' + props.userNumber + '_' + props.pollNumber}`} className='btn btn-danger' style={new style(props.user.github.username, props.username)} onClick={props.removeFunc}>Delete poll</button>
+            </div>
+          </h4>
+        )
+      }
+      
+      function Options(props) {
+        var options = props.poll.options.map(function(option, i) {
+          return (
+            <Item key={props.userNumber + '_' + props.pollNumber + '_' + i} username={props.username} user={props.user} userNumber={props.userNumber} poll={props.poll} pollNumber={props.pollNumber} option={option} optionNumber={i} voteFunc={props.voteFunc} removeFunc={props.removeFunc} editNameFunc={props.editNameFunc} editNameKeyDownFunc={props.editNameKeyDownFunc} /> 
+          )
+        })
+        return (
+          <div>
+            {options}
+          </div> 
+        )
+      }
+      
+      function Item(props) {
+        return (
+          <div className='options'>
+            <span id={`editName${'_' + props.userNumber + '_' + props.pollNumber + '_' + props.optionNumber}`} onKeyDown={props.editNameKeyDownFunc}>{props.option.item}</span>
+            <div className='right-align'>
+              <span className='votes'>Votes: {props.option.votes}</span>
+              <button id={`vote${'_' + props.userNumber + '_' + props.pollNumber + '_' + props.optionNumber}`} className='btn btn-default' onClick={props.voteFunc}>Vote!</button>
+              <button id={`editButton${'_' + props.userNumber + '_' + props.pollNumber + '_' + props.optionNumber}`} className='btn btn-primary' style={new style(props.user.github.username, props.username)} onClick={props.editNameFunc}>Edit option</button>
+              <button id={`removeOption${'_' + props.userNumber + '_' + props.pollNumber + '_' + props.optionNumber}`} className='btn btn-danger' style={new style(props.user.github.username, props.username)} onClick={props.removeFunc}>Delete option</button>
+            </div>
+          </div>
+        )
+      }
+      
+      class Chart extends React.Component {
+        componentDidMount() {
+          var id = $('#chart' + '_' + this.props.userNumber + '_' + this.props.pollNumber)[0]
+          if (this.props.poll.options.length > 0) {
+            chart(id, this.props.poll)
+          } else {
+            id.innerText = ''
+          }
+        }
+        render() {
+          var id
+          if ($('#chart' + '_' + this.props.userNumber + '_' + this.props.pollNumber)[0]) {
+            id = $('#chart' + '_' + this.props.userNumber + '_' + this.props.pollNumber)[0]
+          }
+          if (this.props.poll.options.length > 0 && id) {
+            chart(id, this.props.poll)
+          }
+          if (this.props.poll.options.length == 0 && id) {
+            id.innerText = ''
+          }
+          return (
+            <div id={`chart${'_' + this.props.userNumber + '_' + this.props.pollNumber}`} className='text-center'></div>
+          )
+        }
+      }
+      
+      ReactDOM.render(<Form />, document.getElementById('root'))
+
+    </script>
+  </body>
+</html>

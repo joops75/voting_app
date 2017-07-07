@@ -1,0 +1,95 @@
+body {
+    background: url('/public/img/ballot_box.jpg');/*image weblink: https://www.higher.royalholloway.ac.uk/app/uploads/2015/11/ballot_box.jpg*/
+    background-size: 100%;
+    font-family: 'Port Lligat Sans', sans-serif;
+}
+.dynamic-btn {
+    height: 80px;
+    width: 120px;
+    background: rgb(0, 102, 255);
+    color: white;
+    text-align: center;
+    margin: 5px;
+    padding-top: 5px;
+    border-radius: 5px;
+}
+.dynamic-btn:active {	/* Scale the button down by 10% when clicking on button */
+	transform: scale(0.9, 0.9);
+	-webkit-transform: scale(0.9, 0.9);
+	-moz-transform: scale(0.9, 0.9);
+}
+img {
+    height: 32px;
+}
+h2 {
+    width: 800px;
+    text-align: center;
+    text-shadow: -1px 0 rgb(191, 191, 191), 0 1px rgb(191, 191, 191), 1px 0 rgb(191, 191, 191), 0 -1px rgb(191, 191, 191);
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+p {
+    text-align: center;
+}
+.marginBottom {
+    margin-bottom: 20px;
+}
+.panel {
+    width: 800px;
+    border: solid black 1px;
+    margin: auto;
+    margin-bottom: 10px;
+}
+.options {
+    height: 50px;
+}
+.panel-heading {
+    height: 54px;
+    background: rgb(0, 204, 255);
+}
+i {
+    margin-right: 10px;
+}
+.panel-body {
+    background: rgb(230, 255, 255);
+}
+a {
+    line-height: 35px;
+}
+.poll-name {
+    font-weight: bold;
+}
+.votes {
+    margin-right: 10px;
+}
+.btn {
+    width: 110px;
+    margin-left: 5px;
+}
+.right-align {
+    float: right;
+}
+.add-option {
+    text-align: right;
+}
+.text-center {
+    text-align: center;
+}
+.bar {
+    fill: rgb(0, 204, 255);
+}
+.axis path, .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+.xAxis line {
+    stroke: none;
+}
+.add_btn {
+    width: 800px;
+    text-align: right;
+    margin: auto;
+    margin-bottom: 10px;
+}

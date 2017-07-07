@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Poll-erizer</title>
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<link href="https://fonts.googleapis.com/css?family=Port+Lligat+Sans" rel="stylesheet">
+		<link href="/public/css/polls.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div>
+		    <h2>Poll-erizer</h2>
+		    <p>Welcome <span id="profile-username"></span></p>
+		    <p>What would you like to do?</p>
+			<div class='text-center'>
+    			<a href="/mypolls">
+        			<button class="dynamic-btn">
+    	    			<img src="/public/img/head-icon.png" alt="my polls logo" />
+    		    		<p>My polls</p>
+    			    </button>
+    			</a>
+    			<a href="/allpolls">
+        			<button class="dynamic-btn">
+    	    			<img src="/public/img/eye.png" alt="all polls logo" />
+    		    		<p>View all polls</p>
+    			    </button>
+    			</a>
+    			<a href="/logout">
+        			<button class="dynamic-btn">
+    	    			<img src="/public/img/logout-symbol.png" alt="logout logo" />
+    		    		<p>Logout</p>
+    			    </button>
+    			</a>
+		    </div>
+    	</div>
+        <script type="text/javascript" src="common/ajax-functions.js"></script>
+        <script type="text/javascript" src="controllers/userControllerCopy.client.js"></script>
+    </body>
+</html>
