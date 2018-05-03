@@ -9,10 +9,9 @@ var app = express()
 require("dotenv").load()
 require("./app/config/passport")(passport)
 var port = process.env.PORT || 3000
-// var address = process.env.IP
+var address = process.env.IP || '127.0.0.1:27017'
 
-// mongoose.connect('mongodb://' + address + '/voting_app')//alternate connection method
-mongoose.connect(process.env.MONGO_URI)//from .env file
+mongoose.connect(process.env.MONGO_URI || 'mongodb://' + address + '/voting_app')
 
 app.use('/public', express.static(process.cwd() + '/public'))
 app.use('/common', express.static(process.cwd() + '/app/common'))
