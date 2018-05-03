@@ -1,7 +1,11 @@
 body {
     background: url('/public/img/ballot_box.jpg');/*image weblink: https://www.higher.royalholloway.ac.uk/app/uploads/2015/11/ballot_box.jpg*/
-    background-size: 100%;
+    background-size: cover;
     font-family: 'Port Lligat Sans', sans-serif;
+}
+#frame {
+    width: 800px;
+    margin: auto;
 }
 .dynamic-btn {
     height: 80px;
@@ -22,7 +26,6 @@ img {
     height: 32px;
 }
 h2 {
-    width: 800px;
     text-align: center;
     text-shadow: -1px 0 rgb(191, 191, 191), 0 1px rgb(191, 191, 191), 1px 0 rgb(191, 191, 191), 0 -1px rgb(191, 191, 191);
     margin: auto;
@@ -36,7 +39,6 @@ p {
     margin-bottom: 20px;
 }
 .panel {
-    width: 800px;
     border: solid black 1px;
     margin: auto;
     margin-bottom: 10px;
@@ -88,7 +90,6 @@ a {
     stroke: none;
 }
 .add_btn {
-    width: 800px;
     text-align: right;
     margin: auto;
     margin-bottom: 10px;
