@@ -8,9 +8,7 @@ displaying user polls. D3.js is used to render the graphs associated with each p
 Users who are not logged in may still view and vote on all polls created by other users. If a user logs in via github, they can go to 
 '/mypolls' where they may create their own poll. They also may edit or delete previous polls they created.
 
-Both kinds of poll page ('/mypolls' and '/allpolls') are coded via single html file with react added as a cdn. Ideally, this should be 
-modularised using a build tool such as webpack. This would also improve the app's performance by avoiding the in-browser Babel 
-transformer which used to compile the pages rendered with react.
+Both kinds of poll page ('/mypolls' and '/allpolls') are rendered via react components coded in a single html file. Ideally, these components should be modularised using a build tool such as webpack. This would also improve the app's performance by avoiding the in-browser Babel transformer which is used to compile the pages rendered with react.
 
 Technologies used in this project:
 * node
