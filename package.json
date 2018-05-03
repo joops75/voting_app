@@ -1,7 +1,7 @@
 {
   "name": "voting_app",
   "version": "1.0.0",
-  "description": "",
+  "description": "vote, vote, vote!",
   "main": "server.js",
   "engines": {
     "npm": "2.15.11",
@@ -9,6 +9,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joops75/voting_app"
   },
   "author": "Simon Cooper",
   "license": "ISC",
